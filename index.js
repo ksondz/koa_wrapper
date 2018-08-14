@@ -1,8 +1,8 @@
 
 const Koa = require('koa');
 
-const routerService = require('./service/RouterService');
-const errorService = require('./service/ErrorService');
+const routerService = require('./app/service/RouterService');
+const errorService = require('./app/service/ErrorService');
 
 (async () => {
   const app = new Koa();

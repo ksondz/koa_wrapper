@@ -5,8 +5,8 @@ const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const cors = require('koa-cors');
 
-const routerConfig = require('../config/router.config');
-const controller = require('../controller/ApacheFineractController');
+const routerConfig = require('../../config/router.config');
+const controller = require('../controller/ApacheFineractAPIController');
 
 
 class RouterService {

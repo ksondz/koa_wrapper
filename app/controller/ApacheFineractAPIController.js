@@ -1,9 +1,9 @@
 
 
-const apacheFineractAPIService = require('./../service/ApacheFineractAPIService');
+const apacheFineractAPIService = require('../service/ApacheFineractAPIService');
 
 
-class ApacheFineractController {
+class ApacheFineractAPIController {
 
 
   constructor() {
@@ -46,5 +46,5 @@ class ApacheFineractController {
   }
 }
 
-module.exports = new ApacheFineractController();
+module.exports = new ApacheFineractAPIController();
 

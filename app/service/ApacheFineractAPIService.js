@@ -2,7 +2,7 @@
 
 const requestPromise = require('request-promise');
 
-const appConfig = require('../config/app.config');
+const appConfig = require('../../config/app.config');
 
 
 class ApacheFineractAPIService {
