@@ -4,11 +4,21 @@
   "description": "",
   "main": ".eslintrc.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/pm2/bin/pm2 start ./ecosystem.config.js",
+    "lint": "./node_modules/.bin/eslint  . *.js",
+    "lint-fix": "./node_modules/.bin/eslint --fix  . *.js",
+    "check:security": "./node_modules/nsp/bin/nsp check"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ksondz/engineering_exercise.git"
+  },
+  "config": {
+    "ghooks": {
+      "pre-push": "npm run check:security",
+      "pre-commit": "npm run lint"
+    }
   },
   "author": "",
   "license": "ISC",
@@ -24,5 +34,14 @@
     "koa-router": "^7.4.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2"
+  },
+  "devDependencies": {
+    "eslint": "^4.16.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.5.1",
+    "ghooks": "^2.0.2",
+    "pm2": "^2.9.3"
   }
 }

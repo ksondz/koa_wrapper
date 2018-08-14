@@ -5,15 +5,16 @@ const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const cors = require('koa-cors');
 
-const appConfig = require('../config/app.config');
-const apacheFineractAPIService = require('./ApacheFineractAPIService');
+const routerConfig = require('../config/router.config');
+const controller = require('../controller/ApacheFineractController');
 
 
 class RouterService {
 
+
   constructor() {
     this.router = new Router();
-    this.config = appConfig.router;
+    this.config = routerConfig;
 
     this.bodyParserOptions = { strict: true };
     this.corsOptions = {
@@ -21,40 +22,61 @@ class RouterService {
     };
   }
 
-  async getRoutes() {
 
-    await this.initRoutes();
-
-    return this.router.routes();
-  }
-
-  getRouter() {
-    return this.router;
-  }
-
-
+  /**
+   * @return {Promise<void>}
+   */
   async initRoutes() {
 
     this.router.prefix('/');
 
-    this.router.post(`/${this.config.apiPath}/clients`, async (ctx, next) => {
-      const response = await apacheFineractAPIService.post('/clients', ctx.request.body);
-      ctx.body = response.body || response.error;
-      ctx.status = response.statusCode;
-    });
+    Object.keys(this.config.routes).forEach((routeName) => {
+      const routeConfig = this.config.routes[routeName];
 
-    this.router.get(`/${this.config.apiPath}/clients`, async (ctx, next) => {
-      const response = await apacheFineractAPIService.get('/clients');
-      ctx.body = response.body || response.error;
-      ctx.status = response.statusCode;
-    });
+      if (routeConfig.allowedMethods.includes('GET')) {
+        this.router.get(routeName, routeConfig.path, controller.fetchAll);
 
-    this.router.get(`/${this.config.apiPath}/clients/:clientId`, async (ctx, next) => {
-      const { clientId } = ctx.params;
-      const response = await apacheFineractAPIService.get(`/clients/${clientId}`);
-      ctx.body = response.body || response.error;
-      ctx.status = response.statusCode;
+        if (routeConfig.routeIdentifierName) {
+          this.router.get(routeName, `${routeConfig.path}/:${routeConfig.routeIdentifierName}`, controller.fetch);
+        }
+      }
+
+      if (routeConfig.allowedMethods.includes('POST')) {
+        this.router.post(routeName, routeConfig.path, controller.create);
+      }
     });
+  }
+
+  /**
+   * @param routeName
+   * @param queryParams
+   */
+  filteredRouterQueryParams(routeName, queryParams) {
+    const { queryWhitelist } = this.config.routes[routeName];
+    const filteredParams = {};
+
+    if (queryWhitelist && Object.keys(queryParams).length) {
+      queryWhitelist.forEach((parameter) => {
+        switch (true) {
+          case ((typeof parameter === 'string') && Object.keys(queryParams).includes(parameter)):
+            filteredParams[parameter] = queryParams[parameter];
+            break;
+          case ((typeof parameter === 'object') && parameter.values.includes(queryParams[parameter.name])):
+            filteredParams[parameter.name] = queryParams[parameter.name];
+            break;
+          default:
+        }
+      });
+    }
+
+    return filteredParams;
+  }
+
+  /**
+   * @return {*|Router}
+   */
+  getRouter() {
+    return this.router;
   }
 
   /**
@@ -77,10 +99,6 @@ class RouterService {
   getCors() {
     return cors(this.corsOptions);
   }
-
-  // async __getMethod(ctx, next) {
-  //
-  // }
 }
 
 module.exports = new RouterService();

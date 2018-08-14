@@ -14,7 +14,7 @@ class ApacheFineractAPIService {
     this.requestHeaders = {
       'Content-type': 'application/json',
       'Fineract-Platform-TenantId': 'default',
-      'Authorization': this.getBasicAuthorizationHeader(),
+      Authorization: this.getBasicAuthorizationHeader(),
     };
 
     this.get = this.get.bind(this);
@@ -22,53 +22,70 @@ class ApacheFineractAPIService {
   }
 
 
-  async get(route) {
-    return requestPromise(this.getOptions(route))
-      .catch(function (err) {
-        throw err;
-      });
-  }
-
-  async post(route, data) {
-    return requestPromise(this.getOptions(route, 'POST', data))
-      .catch(function (err) {
-        return err;
-      });
+  /**
+   * @param route
+   * @param queryParams
+   * @return {Promise<void>}
+   */
+  async get(route, queryParams = {}) {
+    const url = this.generateUrl(route);
+    return requestPromise(this.getOptions(url, queryParams));
   }
 
   /**
    * @param route
+   * @param queryParams
+   * @param data
+   * @return {Promise<void>}
+   */
+  async post(route, queryParams = {}, data) {
+    const url = this.generateUrl(route);
+    return requestPromise(this.getOptions(url, queryParams, 'POST', data));
+  }
+
+  /**
+   * @param url
+   * @param queryParams
    * @param method
    * @param data
    * @return {{
    *  method: string,
-   *  url: string,
-   *  headers: ({"Content-type": string, "Fineract-Platform-TenantId": string, Authorization: string}|*),
+   *  url: *,
+   *  headers: ({
+   *    "Content-type": string,
+   *    "Fineract-Platform-TenantId": string,
+   *    Authorization: string
+   *  }|*),
+   *  body,
+   *  qs: *,
    *  json: boolean
    *}}
    */
-  getOptions(route, method = 'GET', data) {
-    const url = `${this.config.apiHost}${route}`;
+  getOptions(url, queryParams, method = 'GET', data = {}) {
 
-    const options = {
-      method: method,
-      url: url,
+    return {
+      method,
+      url,
       headers: this.requestHeaders,
+      body: data,
+      qs: queryParams,
       json: true,
     };
+  }
 
-    if (data) {
-      options.body = data;
-    }
-
-    return options;
+  /**
+   * @param route
+   * @return {string}
+   */
+  generateUrl(route) {
+    return `${this.config.host}${route}`;
   }
 
   /**
    * @return {string}
    */
   getBasicAuthorizationHeader() {
-    const buffer = new Buffer(`${this.config.auth.username}:${this.config.auth.password}`);
+    const buffer = Buffer.from(`${this.config.auth.username}:${this.config.auth.password}`);
 
     return `Basic ${buffer.toString('base64')}`;
   }

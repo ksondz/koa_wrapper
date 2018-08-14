@@ -6,9 +6,6 @@ class ErrorService {
   constructor() {
     this.defaultServerErrorMessage = 'Internal server error';
 
-    /**
-     * @response {any}
-     */
     this.handleError = this.handleError.bind(this);
   }
 
@@ -22,10 +19,14 @@ class ErrorService {
     try {
       await next();
     } catch (err) {
-      ctx.status = err.statusCode;
-      ctx.body = err.message || this.defaultServerErrorMessage;
 
-      ctx.throw(ctx.status, ctx.body);
+      if (!err.statusCode && !err.error) {
+        console.error(err);
+        ctx.throw(500, this.defaultServerErrorMessage);
+      }
+
+      ctx.status = err.statusCode;
+      ctx.body = err.error;
     }
   }
 }

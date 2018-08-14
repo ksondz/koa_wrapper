@@ -2,12 +2,16 @@
 const Koa = require('koa');
 
 const routerService = require('./service/RouterService');
+const errorService = require('./service/ErrorService');
 
 (async () => {
   const app = new Koa();
 
+  app.context.routerService = routerService;
+
   await routerService.initRoutes();
 
+  app.use(errorService.handleError);
   app.use(routerService.getCors());
   app.use(routerService.getBodyParser());
 
